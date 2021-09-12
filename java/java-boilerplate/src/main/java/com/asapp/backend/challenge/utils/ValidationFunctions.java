@@ -1,6 +1,17 @@
 package com.asapp.backend.challenge.utils;
 
+
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.regex.Pattern;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import com.google.gson.JsonObject;
 
@@ -93,8 +104,42 @@ public class ValidationFunctions {
 	
 	
 	
-	public static boolean isExpiredTime(String timestampFromDb) {
-		return false;
+	public static boolean isExpiredTime(String timestampFromDb) throws ParseException {
+		
+		String sDate1 ="";
+		ScriptEngine engine = new ScriptEngineManager().getEngineByName("rhino");
+		Timestamp sqlTimestamp = null;
+		java.sql.Timestamp timestamp= null;
+		try {
+			
+			
+			String script = "(new Date('" + timestampFromDb+ "').toISOString().split('T')[0] + ' ' + new Date('"+ timestampFromDb + "').toTimeString().split(' ')[0])";
+			sDate1 = (String) engine.eval(script);
+			
+			timestamp = java.sql.Timestamp.valueOf(sDate1);
+			System.out.println(timestamp);
+			
+			long now = System.currentTimeMillis();
+	        sqlTimestamp = new Timestamp(now);
+			
+				
+			
+		} catch (Exception e) {
+			
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		
+		boolean result = true;
+		if(timestamp.after(sqlTimestamp)) { 
+ 	    	result = false;
+ 	    } 
+		else
+		{
+			result = true;
+		}
+		
+		return result;
 	}
 	
 	
